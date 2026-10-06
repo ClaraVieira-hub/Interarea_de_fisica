@@ -16,7 +16,7 @@ class QualidadeAguaTest extends TestCase
         $this->qualidadeAgua = new QualidadeAgua();
     }
 
-    // ---------- Casos Felizes ---------- teste
+  
 
     public function testPhDentroDoPadraoCasoFeliz(): void
     {
@@ -48,7 +48,7 @@ class QualidadeAguaTest extends TestCase
         $this->assertEqualsWithDelta(7.0, $ph, 0.0001);
     }
 
-    // ---------- Casos de Borda ----------
+  
 
     public function testPhNoLimiteInferiorCasoDeBorda(): void
     {
@@ -68,7 +68,7 @@ class QualidadeAguaTest extends TestCase
         $this->assertSame('Dentro do padrão', $resultado);
     }
 
-    // ---------- Casos de Erro ----------
+  
 
     public function testPhForaDoPadraoAbaixoCasoDeErro(): void
     {
@@ -85,7 +85,7 @@ class QualidadeAguaTest extends TestCase
     public function testClassificacaoCompletaAguaNaoPotavelCasoDeErro(): void
     {
         $resultado = $this->qualidadeAgua->classificarAgua(
-            ph: 5.0,           // fora do padrão
+            ph: 5.0,           
             turbidez: 0.5,
             cloroResidual: 2.0,
             dureza: 500.0,

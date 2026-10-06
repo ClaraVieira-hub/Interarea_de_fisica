@@ -4,24 +4,18 @@ declare(strict_types=1);
 
 namespace App;
 
-/**
- * Classe responsável por classificar e (opcionalmente) calcular
- * parâmetros de qualidade da água, com base nos padrões de
- * potabilidade usados no Laboratório da Água / Biofiltro Experimental.
- */
+
 class QualidadeAgua
 {
-    // Faixas de referência de potabilidade
+    
     private const PH_MIN = 6.0;
     private const PH_MAX = 9.5;
-    private const TURBIDEZ_MAX = 5.0;      // uT
-    private const CLORO_MIN = 0.2;         // mg/L
-    private const CLORO_MAX = 2.0;         // mg/L
-    private const DUREZA_MAX = 500.0;      // mg/L
+    private const TURBIDEZ_MAX = 5.0;      
+    private const CLORO_MIN = 0.2;         
+    private const CLORO_MAX = 2.0;         
+    private const DUREZA_MAX = 500.0;      
 
-    /**
-     * pH como valor de entrada direta (dataset real).
-     */
+   
     public function classificarPH(float $ph): string
     {
         return ($ph >= self::PH_MIN && $ph <= self::PH_MAX)
@@ -42,8 +36,11 @@ class QualidadeAgua
                 'Concentração de H+ deve ser maior que zero'
             );
         }
-
         return round(-log10($concentracaoH), 2);
+
+        if (-log10($concentracaoH) <= 0 ){
+            
+        }
     }
 
     public function classificarTurbidez(float $turbidez): string
@@ -69,23 +66,11 @@ class QualidadeAgua
 
     /**
      * Classifica todos os parâmetros de uma vez e indica se a água
-     * está potável (todos os parâmetros dentro do padrão).
-     *
-     * @return array{
-     *     ph: string,
-     *     turbidez: string,
-     *     cloroResidual: string,
-     *     dureza: string,
-     *     potavel: bool
+     * está potável.
+     * @return array{   
      * }
      */
-    public function classificarAgua(
-        float $ph,
-        float $turbidez,
-        float $cloroResidual,
-        float $dureza,
-        float $temperatura
-    ): array {
+    public function classificarAgua(float $ph,float $turbidez,float $cloroResidual, float $dureza,float $temperatura): array {
         $resultado = [
             'ph' => $this->classificarPH($ph),
             'turbidez' => $this->classificarTurbidez($turbidez),
