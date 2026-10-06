@@ -1,3 +1,5 @@
+require __DIR__ . '/vendor/autoload.php';
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -13,7 +15,6 @@
 
     <div class="principal">
 
-        <!-- Calculadora de PH -->
         <div class="card">
 
             <h1>Calculadora de pH</h1>
@@ -29,8 +30,6 @@
         </div>
 
 
-
-        <!-- Qualidade da Água -->
         <div class="card">
 
             <h1>Qualidade da Água</h1>

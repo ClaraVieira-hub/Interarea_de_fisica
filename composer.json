@@ -1,0 +1,13 @@
+{
+    "name": "aluno.senai/interarea_de_fisica",
+    "description": "interarea_de_fisica",
+    "type": "project",
+    "authors": [
+        {
+            "name": "AnaClaraPMarques"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.7"
+    }
+}
