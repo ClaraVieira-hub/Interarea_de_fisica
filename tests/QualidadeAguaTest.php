@@ -30,7 +30,7 @@ class QualidadeAguaTest extends TestCase
             ph: 7.0,
             turbidez: 0.5,
             cloroResidual: 2.0,
-            dureza: 500.0,
+            dureza: 150.0,
             temperatura: 25.0
         );
 
@@ -64,9 +64,15 @@ class QualidadeAguaTest extends TestCase
 
     public function testDurezaExatamenteNoLimiteCasoDeBorda(): void
     {
-        $resultado = $this->qualidadeAgua->classificarDureza(500.0);
+        $resultado = $this->qualidadeAgua->classificarDureza(300.0);
         $this->assertSame('Dentro do padrão', $resultado);
     }
+
+    public function testDurezaAcimaDoLimiteCasoDeBorda(): void
+{
+    $resultado = $this->qualidadeAgua->classificarDureza(300.1);
+    $this->assertSame('Fora do padrão', $resultado);
+}
 
   
 

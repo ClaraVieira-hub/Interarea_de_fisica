@@ -12,8 +12,8 @@ class QualidadeAgua
     private const PH_MAX = 9.5;
     private const TURBIDEZ_MAX = 5.0;      
     private const CLORO_MIN = 0.2;         
-    private const CLORO_MAX = 2.0;         
-    private const DUREZA_MAX = 500.0;      
+    private const CLORO_MAX = 5.0;         
+    private const DUREZA_MAX = 300.0;      
 
    
     public function classificarPH(float $ph): string
