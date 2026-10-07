@@ -1,3 +1,14 @@
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use App\QualidadeAgua;
+use App\RelatorioEmbasa;
+
+$relatorio = new RelatorioEmbasa(new QualidadeAgua());
+$registros = $relatorio->carregar(__DIR__ . '/dados/relatorios_embasa.csv');
+?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -58,6 +69,47 @@
             <button onclick="avaliarAgua()">Avaliar</button>
 
             <h2 id="resultadoAgua"></h2>
+
+        </div>
+
+        <div class="card relatorio">
+
+            <h1>Relatórios da Embasa</h1>
+
+            <?php if ($registros === []): ?>
+                <p>Nenhum relatório importado ainda.</p>
+            <?php else: ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Município</th>
+                            <th>Sistema</th>
+                            <th>Coleta</th>
+                            <th>pH</th>
+                            <th>Turbidez</th>
+                            <th>Cloro</th>
+                            <th>Dureza</th>
+                            <th>Situação</th>
+                            <th>Fonte</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($registros as $registro): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($registro['municipio']) ?></td>
+                                <td><?= htmlspecialchars($registro['sistema']) ?></td>
+                                <td><?= htmlspecialchars($registro['data_coleta']) ?></td>
+                                <td><?= $registro['ph'] ?? '-' ?></td>
+                                <td><?= $registro['turbidez'] ?? '-' ?></td>
+                                <td><?= $registro['cloro_residual'] ?? '-' ?></td>
+                                <td><?= $registro['dureza'] ?? '-' ?></td>
+                                <td><?= $relatorio->situacao($registro) ?></td>
+                                <td><?= htmlspecialchars($registro['fonte']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
 
         </div>
 

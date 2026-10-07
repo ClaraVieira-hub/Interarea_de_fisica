@@ -1,0 +1,21 @@
+﻿id,localidade,concentracao_h,ph,turbidez,temperatura,cloro_residual,dureza,classificacao,fonte
+1,ABÓBORA,3.631e-07,6.44,0.86,26.5,2.57,101.91,Água própria para consumo,Embasa/RAIC 2023
+2,ALMAS,,,0.7,,1.73,,Sem pH informado,Embasa/RAIC 2023
+3,AMÉLIA RODRIGUES,6.761e-07,6.17,0.32,27.5,2.94,78.4,Água própria para consumo,Embasa/RAIC 2023
+4,CAMAÇARI - amostra simulada 01,7.59e-08,7.12,0.91,26.0,1.82,96.0,Água própria para consumo,SIMULADO
+5,CAMAÇARI - amostra simulada 02,4.47e-08,7.35,1.14,26.5,1.46,112.0,Água própria para consumo,SIMULADO
+6,CAMAÇARI - amostra simulada 03,1.318e-07,6.88,0.74,27.0,2.1,88.0,Água própria para consumo,SIMULADO
+7,SALVADOR - amostra simulada 01,9.77e-08,7.01,0.82,27.5,1.67,104.0,Água própria para consumo,SIMULADO
+8,SALVADOR - amostra simulada 02,5.5e-08,7.26,1.03,26.0,1.91,118.0,Água própria para consumo,SIMULADO
+9,FEIRA DE SANTANA - amostra simulada 01,6.61e-08,7.18,0.69,26.5,1.54,92.0,Água própria para consumo,SIMULADO
+10,FEIRA DE SANTANA - amostra simulada 02,1.905e-07,6.72,2.1,27.0,1.22,135.0,Água própria para consumo,SIMULADO
+11,LAURO DE FREITAS - amostra simulada 01,3.72e-08,7.43,0.77,27.5,1.76,86.0,Água própria para consumo,SIMULADO
+12,LAURO DE FREITAS - amostra simulada 02,8.32e-08,7.08,1.21,26.0,2.25,126.0,Água própria para consumo,SIMULADO
+13,DIAS D'ÁVILA - amostra simulada 01,1.148e-07,6.94,0.95,26.5,1.88,74.0,Água própria para consumo,SIMULADO
+14,SIMÕES FILHO - amostra simulada 01,4.9e-08,7.31,1.35,27.0,1.69,109.0,Água própria para consumo,SIMULADO
+15,MATA DE SÃO JOÃO - amostra simulada 01,2.455e-07,6.61,1.72,27.5,2.03,65.0,Água própria para consumo,SIMULADO
+16,POJUCA - amostra simulada 01,6.03e-08,7.22,0.88,26.0,1.73,101.0,Água própria para consumo,SIMULADO
+17,POJUCA - amostra simulada 02,8.13e-08,7.09,1.06,26.5,1.94,115.0,Água própria para consumo,SIMULADO
+18,CANDEIAS - amostra simulada 01,1.072e-07,6.97,1.44,27.0,1.58,121.0,Água própria para consumo,SIMULADO
+19,MADRE DE DEUS - amostra simulada 01,6.76e-08,7.17,0.63,27.5,1.81,97.0,Água própria para consumo,SIMULADO
+20,SANTO AMARO - amostra simulada 01,1.479e-07,6.83,1.26,26.0,2.16,130.0,Água própria para consumo,SIMULADO
