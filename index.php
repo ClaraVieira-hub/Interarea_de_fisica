@@ -53,7 +53,7 @@ require __DIR__ . '/vendor/autoload.php';
 
             <p>Temperatura:</p>
 
-            <input type="number" id="cloroResidual" placeholder="Ex: 35°">
+            <input type="number" id="temperatura" placeholder="Ex: 35°">
 
 
 
