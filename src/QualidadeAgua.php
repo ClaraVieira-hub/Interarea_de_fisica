@@ -37,10 +37,6 @@ class QualidadeAgua
             );
         }
         return round(-log10($concentracaoH), 2);
-
-        if (-log10($concentracaoH) <= 0 ){
-            
-        }
     }
 
     public function classificarTurbidez(float $turbidez): string

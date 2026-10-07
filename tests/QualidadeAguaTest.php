@@ -73,7 +73,41 @@ class QualidadeAguaTest extends TestCase
     $resultado = $this->qualidadeAgua->classificarDureza(300.1);
     $this->assertSame('Fora do padrão', $resultado);
 }
+public function testTurbidezExatamenteNoLimiteCasoDeBorda(): void
+{
+    $resultado = $this->qualidadeAgua->classificarTurbidez(5.0);
+    $this->assertSame('Dentro do padrão', $resultado);
+}
 
+public function testTurbidezAcimaDoLimiteCasoDeBorda(): void
+{
+    $resultado = $this->qualidadeAgua->classificarTurbidez(5.1);
+    $this->assertSame('Fora do padrão', $resultado);
+}
+
+public function testCloroAbaixoDoMinimoCasoDeBorda(): void
+{
+    $resultado = $this->qualidadeAgua->classificarCloroResidual(0.19);
+    $this->assertSame('Fora do padrão', $resultado);
+}
+
+public function testCloroExatamenteNoMinimoCasoDeBorda(): void
+{
+    $resultado = $this->qualidadeAgua->classificarCloroResidual(0.2);
+    $this->assertSame('Dentro do padrão', $resultado);
+}
+
+public function testCloroExatamenteNoMaximoCasoDeBorda(): void
+{
+    $resultado = $this->qualidadeAgua->classificarCloroResidual(5.0);
+    $this->assertSame('Dentro do padrão', $resultado);
+}
+
+public function testCloroAcimaDoMaximoCasoDeBorda(): void
+{
+    $resultado = $this->qualidadeAgua->classificarCloroResidual(5.1);
+    $this->assertSame('Fora do padrão', $resultado);
+}
   
 
     public function testPhForaDoPadraoAbaixoCasoDeErro(): void
