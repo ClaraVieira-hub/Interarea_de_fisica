@@ -19,25 +19,25 @@ class BiofiltroTest extends TestCase
 
     public function testEficienciaDeOitentaPorCentoCasoFeliz(): void
     {
-        // (10 - 2) / 10 * 100 = 80
+        
         $this->assertSame(80.0, $this->biofiltro->calcularEficienciaRemocao(10.0, 2.0));
     }
 
     public function testSemMudancaDaEficienciaZero(): void
     {
-        // (5 - 5) / 5 * 100 = 0
+        
         $this->assertSame(0.0, $this->biofiltro->calcularEficienciaRemocao(5.0, 5.0));
     }
 
     public function testRemocaoTotalDaCemPorCentoCasoDeBorda(): void
     {
-        // (8 - 0) / 8 * 100 = 100
+        
         $this->assertSame(100.0, $this->biofiltro->calcularEficienciaRemocao(8.0, 0.0));
     }
 
     public function testPioraDoParametroDaEficienciaNegativa(): void
     {
-        // (4 - 6) / 4 * 100 = -50
+        
         $this->assertSame(-50.0, $this->biofiltro->calcularEficienciaRemocao(4.0, 6.0));
     }
 

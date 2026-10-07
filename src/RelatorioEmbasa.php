@@ -19,36 +19,71 @@ class RelatorioEmbasa
         }
 
         $arquivo = fopen($caminho, 'r');
-        $cabecalho = fgetcsv($arquivo, 0, ',', '"', '');
-        $cabecalho[0] = ltrim($cabecalho[0], "\xEF\xBB\xBF"); // tira o BOM, caractere invisível que alguns editores põem no começo
+        if ($arquivo === false) {
+            throw new InvalidArgumentException('Não foi possível abrir o arquivo de dados.');
+        }
 
+        $cabecalho = fgetcsv($arquivo, 0, ',', '"', '');
+        $cabecalho[0] = ltrim($cabecalho[0], "\xEF\xBB\xBF"); 
         $registros = [];
 
         while (($linha = fgetcsv($arquivo, 0, ',', '"', '')) !== false) {
             if ($linha === [null]) {
-                continue; // linha em branco
+                continue; 
+            }
+
+           
+            if (count($linha) !== count($cabecalho)) {
+                continue;
             }
 
             $dados = array_combine($cabecalho, $linha);
 
-            // Lacuna 1: converta os campos numéricos. Molde para o pH:
+          
             $ph = $dados['ph'] === '' ? null : (float) $dados['ph'];
-            // Faça o mesmo para turbidez, cloro_residual, dureza e temperatura.
+            $turbidez = $dados['turbidez'] === '' ? null : (float) $dados['turbidez'];
+            $cloroResidual = $dados['cloro_residual'] === '' ? null : (float) $dados['cloro_residual'];
+            $dureza = $dados['dureza'] === '' ? null : (float) $dados['dureza'];
+            $temperatura = $dados['temperatura'] === '' ? null : (float) $dados['temperatura'];
 
-            // Lacuna 2: se algum entre pH, turbidez, cloro e dureza for null,
-            // o registro é 'Dados incompletos' e NÃO deve ser classificado.
-            // Caso contrário, chame $this->qualidadeAgua->classificarAgua(...)
-            // com os cinco valores e guarde o resultado.
+
+            if ($ph === null || $turbidez === null || $cloroResidual === null || $dureza === null) {
+                $classificacao = null;
+            } else {
+                
+                $classificacao = $this->qualidadeAgua->classificarAgua(
+                    $ph,
+                    $turbidez,
+                    $cloroResidual,
+                    $dureza,
+                    $temperatura ?? 0.0
+                );
+            }
 
             $registros[] = [
                 'localidade' => $dados['localidade'],
+                'ph' => $ph,
+                'turbidez' => $turbidez,
+                'cloro_residual' => $cloroResidual,
+                'dureza' => $dureza,
+                'temperatura' => $temperatura,
+                'classificacao' => $classificacao,
                 'fonte' => $dados['fonte'],
-                // acrescente aqui os valores lidos e o resultado da lacuna 2
             ];
         }
 
         fclose($arquivo);
 
         return $registros;
+    }
+
+   
+    public function situacao(array $registro): string
+    {
+        if ($registro['classificacao'] === null) {
+            return 'Dados incompletos';
+        }
+
+        return $registro['classificacao']['potavel'] ? 'Potável' : 'Fora do padrão';
     }
 }

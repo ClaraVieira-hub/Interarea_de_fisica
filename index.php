@@ -117,7 +117,7 @@ $registros = $relatorio->carregar(__DIR__ . '/dataset/RelatorioEmbasa.csv');
     </div>
 
 
-    <script src="templates/js/script.js"></script>
+   
 
 </body>
 
