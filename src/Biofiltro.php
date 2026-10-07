@@ -21,9 +21,9 @@ class Biofiltro
         return round((($antes - $depois) / $antes) * 100, 2);
     }
 
-        public function aplicarEficiencia(float $antes, float $eficienciaPercentual): float
+    public function aplicarEficiencia(float $antes, float $eficienciaPercentual): float
     {
-     if ($antes < 0) {
+        if ($antes < 0) {
             throw new InvalidArgumentException('O valor de antes não pode ser negativo.');
         }
 
@@ -33,15 +33,15 @@ class Biofiltro
 
         return round($antes * (1 - $eficienciaPercentual / 100), 2);
     }
-    }
 
     public function aplicarCamadas(float $antes, array $eficiencias): float
     {
-      $valor = $antes;
+        $valor = $antes;
 
         foreach ($eficiencias as $eficiencia) {
-            $valor = $this->aplicarEficiencia;
+            $valor = $this->aplicarEficiencia($valor, $eficiencia);
         }
 
         return $valor;
+    }
 }

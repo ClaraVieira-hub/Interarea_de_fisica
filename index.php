@@ -6,7 +6,7 @@ use App\QualidadeAgua;
 use App\RelatorioEmbasa;
 
 $relatorio = new RelatorioEmbasa(new QualidadeAgua());
-$registros = $relatorio->carregar(__DIR__ . '/dados/relatorios_embasa.csv');
+$registros = $relatorio->carregar(__DIR__ . '/dataset/RelatorioEmbasa.csv');
 ?>
 
 <!DOCTYPE html>
