@@ -1,125 +1,147 @@
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
+declare(strict_types=1);
+
+require_once __DIR__ . '/src/QualidadeAgua.php';
+require_once __DIR__ . '/src/RelatorioEmbasa.php';
+require_once __DIR__ . '/src/Biofiltro.php';
 
 use App\QualidadeAgua;
 use App\RelatorioEmbasa;
 
-$relatorio = new RelatorioEmbasa(new QualidadeAgua());
+$qualidadeAgua = new QualidadeAgua();
+$relatorio = new RelatorioEmbasa($qualidadeAgua);
 $registros = $relatorio->carregar(__DIR__ . '/dataset/RelatorioEmbasa.csv');
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoramento da Água</title>
+    <title>Monitoramento da Qualidade da Água</title>
     <link rel="stylesheet" href="templates/css/style.css">
-
 </head>
-
 <body>
+<main class="container">
+    <section class="card">
+        <h1>Calculadora de pH</h1>
+        <p>Digite a concentração de H⁺:</p>
+        <input type="number" id="h" step="any" min="0" placeholder="Ex.: 0.001">
+        <button type="button" onclick="calcularPH()">Calcular pH</button>
+        <div id="resultadoPH" class="resultado"></div>
+    </section>
 
-    <div class="principal">
+    <section class="card">
+        <h1>Qualidade da Água</h1>
 
-        <div class="card">
+        <label for="phAgua">pH da água</label>
+        <input type="number" id="phAgua" step="any" min="0" placeholder="Ex.: 7">
 
-            <h1>Calculadora de pH</h1>
+        <label for="turbidez">Turbidez</label>
+        <input type="number" id="turbidez" step="any" min="0" placeholder="Ex.: 5">
 
-            <p>Digite a concentração de H⁺:</p>
+        <label for="cloroResidual">Cloro residual</label>
+        <input type="number" id="cloroResidual" step="any" min="0" placeholder="Ex.: 2">
 
-            <input type="number" id="h" placeholder="Ex: 0.001">
+        <label for="dureza">Dureza</label>
+        <input type="number" id="dureza" step="any" min="0" placeholder="Ex.: 150">
 
-            <button onclick="calcularPH()">Calcular pH</button>
+        <label for="temperatura">Temperatura (°C)</label>
+        <input type="number" id="temperatura" step="any" min="0" max="100" placeholder="Ex.: 25">
 
-            <h2 id="resultadoPH"></h2>
+        <button type="button" onclick="avaliarAgua()">Avaliar água</button>
+        <div id="resultadoAgua" class="resultado"></div>
+    </section>
 
-        </div>
+    <section class="card relatorio">
+        <h1>Relatórios da Embasa</h1>
 
-
-        <div class="card">
-
-            <h1>Qualidade da Água</h1>
-
-            <p>Digite o pH da água:</p>
-
-            <input type="number" id="phAgua" placeholder="Ex: 7">
-
-            <p>Turbidez:</p>
-
-            <input type="number" id="turbidez" placeholder="Ex: 5">
-
-            <p>Cloro Residual:</p>
-
-            <input type="number" id="cloroResidual" placeholder="Ex: 2">
-
-
-            <p>Dureza:</p>
-
-            <input type="number" id="dureza" placeholder="Ex: 500">
-
-            <p>Temperatura:</p>
-
-            <input type="number" id="temperatura" placeholder="Ex: 35°">
-
-
-
-            <button onclick="avaliarAgua()">Avaliar</button>
-
-            <h2 id="resultadoAgua"></h2>
-
-        </div>
-
-        <div class="card relatorio">
-
-            <h1>Relatórios da Embasa</h1>
-
-            <?php if ($registros === []): ?>
-                <p>Nenhum relatório importado ainda.</p>
-            <?php else: ?>
+        <?php if ($registros === []): ?>
+            <p>Nenhum relatório importado.</p>
+        <?php else: ?>
+            <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th>Município</th>
-                            <th>Sistema</th>
-                            <th>Coleta</th>
+                            <th>Localidade</th>
                             <th>pH</th>
                             <th>Turbidez</th>
                             <th>Cloro</th>
                             <th>Dureza</th>
+                            <th>Temperatura</th>
                             <th>Situação</th>
                             <th>Fonte</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($registros as $registro): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($registro['municipio']) ?></td>
-                                <td><?= htmlspecialchars($registro['sistema']) ?></td>
-                                <td><?= htmlspecialchars($registro['data_coleta']) ?></td>
-                                <td><?= $registro['ph'] ?? '-' ?></td>
-                                <td><?= $registro['turbidez'] ?? '-' ?></td>
-                                <td><?= $registro['cloro_residual'] ?? '-' ?></td>
-                                <td><?= $registro['dureza'] ?? '-' ?></td>
-                                <td><?= $relatorio->situacao($registro) ?></td>
-                                <td><?= htmlspecialchars($registro['fonte']) ?></td>
-                            </tr>
-                        <?php endforeach; ?>
+                    <?php foreach ($registros as $registro): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($registro['localidade']) ?></td>
+                            <td><?= $registro['ph'] !== null ? htmlspecialchars((string) $registro['ph']) : '-' ?></td>
+                            <td><?= $registro['turbidez'] !== null ? htmlspecialchars((string) $registro['turbidez']) : '-' ?></td>
+                            <td><?= $registro['cloro_residual'] !== null ? htmlspecialchars((string) $registro['cloro_residual']) : '-' ?></td>
+                            <td><?= $registro['dureza'] !== null ? htmlspecialchars((string) $registro['dureza']) : '-' ?></td>
+                            <td><?= $registro['temperatura'] !== null ? htmlspecialchars((string) $registro['temperatura']) . ' °C' : '-' ?></td>
+                            <td><?= htmlspecialchars($relatorio->situacao($registro)) ?></td>
+                            <td><?= htmlspecialchars($registro['fonte']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
                     </tbody>
                 </table>
-            <?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </section>
+</main>
 
-        </div>
+<script>
+function calcularPH() {
+    const valor = Number(document.getElementById('h').value);
+    const resultado = document.getElementById('resultadoPH');
 
+    if (!Number.isFinite(valor) || valor <= 0) {
+        resultado.textContent = 'Digite uma concentração de H+ maior que zero.';
+        return;
+    }
 
-    </div>
+    const ph = -Math.log10(valor);
+    resultado.textContent = `pH = ${ph.toFixed(2)}`;
+}
 
+function avaliarAgua() {
+    const ph = Number(document.getElementById('phAgua').value);
+    const turbidez = Number(document.getElementById('turbidez').value);
+    const cloro = Number(document.getElementById('cloroResidual').value);
+    const dureza = Number(document.getElementById('dureza').value);
+    const temperatura = Number(document.getElementById('temperatura').value);
+    const resultado = document.getElementById('resultadoAgua');
 
-   
+    if (![ph, turbidez, cloro, dureza, temperatura].every(Number.isFinite)) {
+        resultado.textContent = 'Preencha todos os campos.';
+        return;
+    }
 
+    if (turbidez < 0 || cloro < 0 || dureza < 0 || temperatura < 0 || temperatura > 100) {
+        resultado.textContent = 'Verifique os valores informados.';
+        return;
+    }
+
+    const parametros = {
+        'pH': ph >= 6 && ph <= 9.5,
+        'Turbidez': turbidez <= 5,
+        'Cloro residual': cloro >= 0.2 && cloro <= 5,
+        'Dureza': dureza <= 300
+    };
+
+    const fora = Object.entries(parametros)
+        .filter(([, dentro]) => !dentro)
+        .map(([nome]) => nome);
+
+    if (fora.length === 0) {
+        resultado.innerHTML = '<strong>Água dentro dos padrões.</strong>';
+    } else {
+        resultado.innerHTML = `<strong>Fora do padrão:</strong> ${fora.join(', ')}.`;
+    }
+}
+</script>
 </body>
-
-
 </html>

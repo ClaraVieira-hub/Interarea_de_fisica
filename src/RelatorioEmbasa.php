@@ -19,38 +19,45 @@ class RelatorioEmbasa
         }
 
         $arquivo = fopen($caminho, 'r');
+
         if ($arquivo === false) {
             throw new InvalidArgumentException('Não foi possível abrir o arquivo de dados.');
         }
 
-        $cabecalho = fgetcsv($arquivo, 0, ',', '"', '');
-        $cabecalho[0] = ltrim($cabecalho[0], "\xEF\xBB\xBF"); 
+        $cabecalho = fgetcsv($arquivo, 0, ',', '"', '\\');
+
+        if ($cabecalho === false) {
+            fclose($arquivo);
+            return [];
+        }
+
+        $cabecalho[0] = preg_replace('/^ï»¿/', '', $cabecalho[0]);
         $registros = [];
 
-        while (($linha = fgetcsv($arquivo, 0, ',', '"', '')) !== false) {
-            if ($linha === [null]) {
-                continue; 
+        while (($linha = fgetcsv($arquivo, 0, ',', '"', '\\')) !== false) {
+            if ($linha === [null] || count(array_filter($linha, static fn ($valor) => $valor !== null && trim((string) $valor) !== '')) === 0) {
+                continue;
             }
 
-           
             if (count($linha) !== count($cabecalho)) {
                 continue;
             }
 
             $dados = array_combine($cabecalho, $linha);
 
-          
-            $ph = $dados['ph'] === '' ? null : (float) $dados['ph'];
-            $turbidez = $dados['turbidez'] === '' ? null : (float) $dados['turbidez'];
-            $cloroResidual = $dados['cloro_residual'] === '' ? null : (float) $dados['cloro_residual'];
-            $dureza = $dados['dureza'] === '' ? null : (float) $dados['dureza'];
-            $temperatura = $dados['temperatura'] === '' ? null : (float) $dados['temperatura'];
+            if ($dados === false) {
+                continue;
+            }
 
+            $ph = $this->numeroOuNull($dados['ph'] ?? null);
+            $turbidez = $this->numeroOuNull($dados['turbidez'] ?? null);
+            $cloroResidual = $this->numeroOuNull($dados['cloro_residual'] ?? null);
+            $dureza = $this->numeroOuNull($dados['dureza'] ?? null);
+            $temperatura = $this->numeroOuNull($dados['temperatura'] ?? null);
 
-            if ($ph === null || $turbidez === null || $cloroResidual === null || $dureza === null) {
-                $classificacao = null;
-            } else {
-                
+            $classificacao = null;
+
+            if ($ph !== null && $turbidez !== null && $cloroResidual !== null && $dureza !== null) {
                 $classificacao = $this->qualidadeAgua->classificarAgua(
                     $ph,
                     $turbidez,
@@ -61,14 +68,16 @@ class RelatorioEmbasa
             }
 
             $registros[] = [
-                'localidade' => $dados['localidade'],
+                'id' => $dados['id'] ?? '',
+                'localidade' => $dados['localidade'] ?? '',
+                'concentracao_h' => $this->numeroOuNull($dados['concentracao_h'] ?? null),
                 'ph' => $ph,
                 'turbidez' => $turbidez,
+                'temperatura' => $temperatura,
                 'cloro_residual' => $cloroResidual,
                 'dureza' => $dureza,
-                'temperatura' => $temperatura,
                 'classificacao' => $classificacao,
-                'fonte' => $dados['fonte'],
+                'fonte' => $dados['fonte'] ?? ''
             ];
         }
 
@@ -77,7 +86,6 @@ class RelatorioEmbasa
         return $registros;
     }
 
-   
     public function situacao(array $registro): string
     {
         if ($registro['classificacao'] === null) {
@@ -85,5 +93,14 @@ class RelatorioEmbasa
         }
 
         return $registro['classificacao']['potavel'] ? 'Potável' : 'Fora do padrão';
+    }
+
+    private function numeroOuNull(?string $valor): ?float
+    {
+        if ($valor === null || trim($valor) === '') {
+            return null;
+        }
+
+        return is_numeric($valor) ? (float) $valor : null;
     }
 }

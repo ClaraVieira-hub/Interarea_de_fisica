@@ -15,7 +15,7 @@ class Biofiltro
         }
 
         if ($antes === 0.0) {
-            throw new InvalidArgumentException('O valor de antes não pode ser zero (divisão por zero).');
+            throw new InvalidArgumentException('O valor de antes não pode ser zero.');
         }
 
         return round((($antes - $depois) / $antes) * 100, 2);
@@ -36,10 +36,14 @@ class Biofiltro
 
     public function aplicarCamadas(float $antes, array $eficiencias): float
     {
+        if ($antes < 0) {
+            throw new InvalidArgumentException('O valor inicial não pode ser negativo.');
+        }
+
         $valor = $antes;
 
         foreach ($eficiencias as $eficiencia) {
-            $valor = $this->aplicarEficiencia($valor, $eficiencia);
+            $valor = $this->aplicarEficiencia($valor, (float) $eficiencia);
         }
 
         return $valor;

@@ -43,7 +43,6 @@ class QualidadeAguaTest extends TestCase
 
     public function testCalculoPhPorConcentracaoAguaNeutraCasoFeliz(): void
     {
-        // Água neutra: [H+] = 1 x 10^-7 mol/L -> pH = 7.0
         $ph = $this->qualidadeAgua->calcularPHPorConcentracao(0.0000001);
         $this->assertEqualsWithDelta(7.0, $ph, 0.0001);
     }
