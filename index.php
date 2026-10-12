@@ -10,142 +10,145 @@ use App\QualidadeAgua;
 use App\RelatorioEmbasa;
 use App\Biofiltro;
 
-$qualidadeAgua = new QualidadeAgua();
-$biofiltro = new Biofiltro();
-$relatorio = new RelatorioEmbasa($qualidadeAgua);
-
-$registros = $relatorio->carregar(
-    __DIR__ . '/dataset/RelatorioEmbasa.csv'
-);
+$agua = new QualidadeAgua();
+$filtro = new Biofiltro();
+$relatorio = new RelatorioEmbasa($agua);
+$registros = $relatorio->carregar(__DIR__ . '/dataset/RelatorioEmbasa.csv');
 
 $resultado = null;
 $erro = '';
 
 try {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-        if (isset($_POST['calcularPH'])) {
-            $concentracao = (float) $_POST['concentracaoH'];
-
-            $resultado = $qualidadeAgua
-                ->calcularPHPorConcentracao($concentracao);
-        }
-
-        if (isset($_POST['avaliarAgua'])) {
-            $resultado = $qualidadeAgua->classificarAgua(
-                (float) $_POST['ph'],
-                (float) $_POST['turbidez'],
-                (float) $_POST['cloro'],
-                (float) $_POST['dureza'],
-                (float) $_POST['temperatura']
-            );
-        }
-
-        if (isset($_POST['simularBiofiltro'])) {
-            $resultado = $biofiltro->aplicarEficiencia(
-                (float) $_POST['turbidezInicial'],
-                (float) $_POST['eficiencia']
-            );
-        }
+    if (isset($_POST['calcularPH'])) {
+        $resultado = $agua->calcularPHPorConcentracao((float) $_POST['concentracaoH']);
+    } elseif (isset($_POST['avaliarAgua'])) {
+        $resultado = $agua->classificarAgua(
+            (float) $_POST['ph'],
+            (float) $_POST['turbidez'],
+            (float) $_POST['cloro'],
+            (float) $_POST['dureza'],
+            (float) $_POST['temperatura']
+        );
+    } elseif (isset($_POST['simularBiofiltro'])) {
+        $resultado = $filtro->aplicarEficiencia(
+            (float) $_POST['turbidezInicial'],
+            (float) $_POST['eficiencia']
+        );
     }
 } catch (InvalidArgumentException $e) {
     $erro = $e->getMessage();
+}
+
+function escapar(string $valor): string
+{
+    return htmlspecialchars($valor, ENT_QUOTES, 'UTF-8');
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laboratório da Água</title>
+    <title>Laboratório Digital da Água</title>
     <link rel="stylesheet" href="templates/css/style.css">
 </head>
+
 <body>
 
-<h1>Laboratório Digital da Água</h1>
+    <header class="cabecalho">
+        <h1>Laboratório Digital da Água</h1>
+        <p>Analise a qualidade da água e simule um biofiltro.</p>
+    </header>
 
-<?php if ($erro !== ''): ?>
-    <p><?= htmlspecialchars($erro) ?></p>
-<?php endif; ?>
-
-<section>
-    <h2>Calculadora de pH</h2>
-
-    <form method="POST">
-        <label>Concentração de H+:</label>
-        <input type="number" name="concentracaoH"
-               step="any" min="0" required>
-        <button type="submit" name="calcularPH">Calcular pH</button>
-    </form>
-
-    <?php if (isset($_POST['calcularPH']) && is_float($resultado)): ?>
-        <p>pH: <?= $resultado ?></p>
-        <p><?= $qualidadeAgua->classificarPH($resultado) ?></p>
+    <?php if ($erro !== ''): ?>
+        <p class="erro"><?= escapar($erro) ?></p>
     <?php endif; ?>
-</section>
 
-<section>
-    <h2>Qualidade da Água</h2>
+    <main class="container">
 
-    <form method="POST">
-        <label>pH:</label>
-        <input type="number" name="ph" step="any" required>
+        <section class="card">
+            <h2>Calculadora de pH</h2>
+            <form method="POST">
+                <label>Concentração de H+:</label>
+                <input type="number" name="concentracaoH" step="any" min="0" required>
+                <button name="calcularPH">Calcular pH</button>
+            </form>
+            <?php if (isset($_POST['calcularPH']) && is_float($resultado)): ?>
+                <div class="resultado">
+                    <p>pH: <?= escapar((string) $resultado) ?></p>
+                    <p><?= escapar($agua->classificarPH($resultado)) ?></p>
+                </div>
+            <?php endif; ?>
+        </section>
 
-        <label>Turbidez (NTU):</label>
-        <input type="number" name="turbidez" step="any" required>
+        <section class="card">
+            <h2>Qualidade da Água</h2>
+            <form method="POST">
+                <?php
+                $campos = [
+                    'ph' => 'pH',
+                    'turbidez' => 'Turbidez (NTU)',
+                    'cloro' => 'Cloro residual (mg/L)',
+                    'dureza' => 'Dureza (mg/L)',
+                    'temperatura' => 'Temperatura (°C)'
+                ];
+                foreach ($campos as $nome => $rotulo):
+                ?>
+                    <label><?= escapar($rotulo) ?>:</label>
+                    <input type="number" name="<?= escapar($nome) ?>" step="any" required>
+                <?php endforeach; ?>
+                <button name="avaliarAgua">Avaliar água</button>
+            </form>
+            <?php if (isset($_POST['avaliarAgua']) && is_array($resultado)): ?>
+                <div class="resultado">
+                    <?php foreach ($resultado as $nome => $valor): ?>
+                        <p><strong><?= escapar(ucfirst((string) $nome)) ?>:</strong>
+                            <?= escapar(is_bool($valor) ? ($valor ? 'Sim' : 'Não') : (string) $valor) ?></p>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </section>
 
-        <label>Cloro residual (mg/L):</label>
-        <input type="number" name="cloro" step="any" required>
+        <section class="card">
+            <h2>Simulador de Biofiltro</h2>
+            <form method="POST">
+                <label>Turbidez inicial (NTU):</label>
+                <input type="number" name="turbidezInicial" min="0" step="any" required>
+                <label>Eficiência de remoção (%):</label>
+                <input type="number" name="eficiencia" min="0" max="100" step="any" value="80" required>
+                <button name="simularBiofiltro">Simular filtro</button>
+            </form>
+            <?php if (isset($_POST['simularBiofiltro']) && is_float($resultado)): ?>
+                <div class="resultado">
+                    <p>Turbidez após o filtro: <?= escapar((string) $resultado) ?> NTU</p>
+                </div>
+            <?php endif; ?>
+        </section>
 
-        <label>Dureza (mg/L):</label>
-        <input type="number" name="dureza" step="any" required>
+        <section class="card relatorio">
+            <h2>Relatórios da Embasa</h2>
+            <?php foreach ($registros as $registro): ?>
+                <p class="registro">
+                    <?php
+                    if (is_array($registro)) {
+                        $dados = array_map(
+                            fn($valor) => is_scalar($valor) ? (string) $valor : '',
+                            $registro
+                        );
+                        echo escapar(implode(' | ', $dados));
+                    } else {
+                        echo escapar((string) $registro);
+                    }
+                    ?>
+                </p>
+            <?php endforeach; ?>
+        </section>
 
-        <label>Temperatura (°C):</label>
-        <input type="number" name="temperatura" step="any" required>
-
-        <button type="submit" name="avaliarAgua">Avaliar água</button>
-    </form>
-
-    <?php if (isset($_POST['avaliarAgua']) && is_array($resultado)): ?>
-        <?php foreach ($resultado as $indicador => $valor): ?>
-            <p>
-                <?= htmlspecialchars((string) $indicador) ?>:
-                <?= is_bool($valor) ? ($valor ? 'Sim' : 'Não') : htmlspecialchars((string) $valor) ?>
-            </p>
-        <?php endforeach; ?>
-    <?php endif; ?>
-</section>
-
-<section>
-    <h2>Simulador de Biofiltro</h2>
-
-    <form method="POST">
-        <label>Turbidez inicial:</label>
-        <input type="number" name="turbidezInicial"
-               step="any" min="0" required>
-
-        <label>Eficiência de remoção (%):</label>
-        <input type="number" name="eficiencia"
-               step="any" min="0" max="100" value="80" required>
-
-        <button type="submit" name="simularBiofiltro">
-            Simular filtro
-        </button>
-    </form>
-
-    <?php if (isset($_POST['simularBiofiltro']) && is_float($resultado)): ?>
-        <p>Turbidez após o filtro: <?= $resultado ?> NTU</p>
-    <?php endif; ?>
-</section>
-
-<section>
-    <h2>Relatórios da Embasa</h2>
-
-    <?php foreach ($registros as $registro): ?>
-        <p><?= htmlspecialchars(implode(' | ', $registro)) ?></p>
-    <?php endforeach; ?>
-</section>
+    </main>
+    <footer class="rodape">Laboratório Digital da Água — Projeto educacional</footer>
 
 </body>
+
 </html>
