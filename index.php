@@ -113,20 +113,38 @@ function escapar(string $valor): string
 
         <section class="card">
             <h2>Simulador de Biofiltro</h2>
+
             <form method="POST">
                 <label>Turbidez inicial (NTU):</label>
                 <input type="number" name="turbidezInicial" min="0" step="any" required>
+
                 <label>Eficiência de remoção (%):</label>
                 <input type="number" name="eficiencia" min="0" max="100" step="any" value="80" required>
+
                 <button name="simularBiofiltro">Simular filtro</button>
             </form>
+
             <?php if (isset($_POST['simularBiofiltro']) && is_float($resultado)): ?>
                 <div class="resultado">
-                    <p>Turbidez após o filtro: <?= escapar((string) $resultado) ?> NTU</p>
+                    <h3>Resultado da filtragem</h3>
+
+                    <p>
+                        <strong>Antes do filtro:</strong>
+                        <?= escapar((string) (float) $_POST['turbidezInicial']) ?> NTU
+                    </p>
+
+                    <p>
+                        <strong>Eficiência de remoção:</strong>
+                        <?= escapar((string) (float) $_POST['eficiencia']) ?>%
+                    </p>
+
+                    <p>
+                        <strong>Depois do filtro:</strong>
+                        <?= escapar((string) $resultado) ?> NTU
+                    </p>
                 </div>
             <?php endif; ?>
         </section>
-
         <section class="card relatorio">
             <h2>Relatórios da Embasa</h2>
             <?php foreach ($registros as $registro): ?>
