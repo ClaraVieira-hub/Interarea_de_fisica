@@ -76,4 +76,14 @@ class RelatorioEmbasaTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->relatorio->carregar('/caminho/que/nao/existe.csv');
     }
+
+
+    public function testArquivoVazioRetornaListaVazia(): void
+    {
+        file_put_contents($this->arquivo, '');
+
+        $registros = $this->relatorio->carregar($this->arquivo);
+
+        $this->assertSame([], $registros);
+    }
 }
