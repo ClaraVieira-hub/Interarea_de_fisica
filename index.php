@@ -12,233 +12,140 @@ use App\Biofiltro;
 
 $qualidadeAgua = new QualidadeAgua();
 $biofiltro = new Biofiltro();
-
-$turbidezFinal = null;
-$erroBiofiltro = '';
-$turbidezInicial = null;
-$eficiencia = 80.0;
-
 $relatorio = new RelatorioEmbasa($qualidadeAgua);
-$registros = $relatorio->carregar(__DIR__ . '/dataset/RelatorioEmbasa.csv');
 
-if (
-    $_SERVER['REQUEST_METHOD'] === 'POST'
-    && isset($_POST['simularBiofiltro'])
-) {
-    try {
-        if (
-            !isset($_POST['turbidezInicial'], $_POST['eficienciaBiofiltro'])
-            || $_POST['turbidezInicial'] === ''
-            || $_POST['eficienciaBiofiltro'] === ''
-            || !is_numeric($_POST['turbidezInicial'])
-            || !is_numeric($_POST['eficienciaBiofiltro'])
-        ) {
-            throw new InvalidArgumentException('Preencha os campos corretamente.');
+$registros = $relatorio->carregar(
+    __DIR__ . '/dataset/RelatorioEmbasa.csv'
+);
+
+$resultado = null;
+$erro = '';
+
+try {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+        if (isset($_POST['calcularPH'])) {
+            $concentracao = (float) $_POST['concentracaoH'];
+
+            $resultado = $qualidadeAgua
+                ->calcularPHPorConcentracao($concentracao);
         }
 
-        $turbidezInicial = (float) $_POST['turbidezInicial'];
-        $eficiencia = (float) $_POST['eficienciaBiofiltro'];
+        if (isset($_POST['avaliarAgua'])) {
+            $resultado = $qualidadeAgua->classificarAgua(
+                (float) $_POST['ph'],
+                (float) $_POST['turbidez'],
+                (float) $_POST['cloro'],
+                (float) $_POST['dureza'],
+                (float) $_POST['temperatura']
+            );
+        }
 
-        $turbidezFinal = $biofiltro->aplicarEficiencia(
-            $turbidezInicial,
-            $eficiencia
-        );
-    } catch (InvalidArgumentException $e) {
-        $erroBiofiltro = $e->getMessage();
+        if (isset($_POST['simularBiofiltro'])) {
+            $resultado = $biofiltro->aplicarEficiencia(
+                (float) $_POST['turbidezInicial'],
+                (float) $_POST['eficiencia']
+            );
+        }
     }
+} catch (InvalidArgumentException $e) {
+    $erro = $e->getMessage();
 }
 ?>
-<!DOCTYPE html>
-<html lang="pt-BR">
 
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoramento da Qualidade da Água</title>
+    <title>Laboratório da Água</title>
     <link rel="stylesheet" href="templates/css/style.css">
 </head>
-
 <body>
-    <main class="container">
 
-        <section class="card">
-            <h1>Calculadora de pH</h1>
-            <p>Digite a concentração de H⁺:</p>
-            <input type="number" id="h" step="any" min="0" placeholder="Ex.: 0.001">
-            <button type="button" onclick="calcularPH()">Calcular pH</button>
-            <div id="resultadoPH" class="resultado"></div>
-        </section>
+<h1>Laboratório Digital da Água</h1>
 
-        <section class="card">
-            <h1>Qualidade da Água</h1>
+<?php if ($erro !== ''): ?>
+    <p><?= htmlspecialchars($erro) ?></p>
+<?php endif; ?>
 
-            <label for="phAgua">pH da água</label>
-            <input type="number" id="phAgua" step="any" min="0" placeholder="Ex.: 7">
+<section>
+    <h2>Calculadora de pH</h2>
 
-            <label for="turbidez">Turbidez</label>
-            <input type="number" id="turbidez" step="any" min="0" placeholder="Ex.: 5">
+    <form method="POST">
+        <label>Concentração de H+:</label>
+        <input type="number" name="concentracaoH"
+               step="any" min="0" required>
+        <button type="submit" name="calcularPH">Calcular pH</button>
+    </form>
 
-            <label for="cloroResidual">Cloro residual</label>
-            <input type="number" id="cloroResidual" step="any" min="0" placeholder="Ex.: 2">
+    <?php if (isset($_POST['calcularPH']) && is_float($resultado)): ?>
+        <p>pH: <?= $resultado ?></p>
+        <p><?= $qualidadeAgua->classificarPH($resultado) ?></p>
+    <?php endif; ?>
+</section>
 
-            <label for="dureza">Dureza</label>
-            <input type="number" id="dureza" step="any" min="0" placeholder="Ex.: 150">
+<section>
+    <h2>Qualidade da Água</h2>
 
-            <label for="temperatura">Temperatura (°C)</label>
-            <input type="number" id="temperatura" step="any" min="0" max="100" placeholder="Ex.: 25">
+    <form method="POST">
+        <label>pH:</label>
+        <input type="number" name="ph" step="any" required>
 
-            <button type="button" onclick="avaliarAgua()">Avaliar água</button>
-            <div id="resultadoAgua" class="resultado"></div>
-        </section>
+        <label>Turbidez (NTU):</label>
+        <input type="number" name="turbidez" step="any" required>
 
-        <section class="card">
-            <h1>Simulador de Biofiltro</h1>
-            <p>Compare a turbidez antes e depois da filtragem.</p>
+        <label>Cloro residual (mg/L):</label>
+        <input type="number" name="cloro" step="any" required>
 
-            <form method="POST">
-                <label for="turbidezInicial">Turbidez inicial (NTU)</label>
-                <input
-                    type="number"
-                    name="turbidezInicial"
-                    id="turbidezInicial"
-                    min="0"
-                    step="any"
-                    value="<?= htmlspecialchars((string) ($turbidezInicial ?? '')) ?>"
-                    required
-                >
+        <label>Dureza (mg/L):</label>
+        <input type="number" name="dureza" step="any" required>
 
-                <label for="eficienciaBiofiltro">Eficiência do biofiltro (%)</label>
-                <input
-                    type="number"
-                    name="eficienciaBiofiltro"
-                    id="eficienciaBiofiltro"
-                    min="0"
-                    max="100"
-                    step="any"
-                    value="<?= htmlspecialchars((string) $eficiencia) ?>"
-                    required
-                >
+        <label>Temperatura (°C):</label>
+        <input type="number" name="temperatura" step="any" required>
 
-                <button type="submit" name="simularBiofiltro">
-                    Simular filtragem
-                </button>
-            </form>
+        <button type="submit" name="avaliarAgua">Avaliar água</button>
+    </form>
 
-            <?php if ($erroBiofiltro !== ''): ?>
-                <div class="resultado">
-                    <?= htmlspecialchars($erroBiofiltro) ?>
-                </div>
-            <?php endif; ?>
+    <?php if (isset($_POST['avaliarAgua']) && is_array($resultado)): ?>
+        <?php foreach ($resultado as $indicador => $valor): ?>
+            <p>
+                <?= htmlspecialchars((string) $indicador) ?>:
+                <?= is_bool($valor) ? ($valor ? 'Sim' : 'Não') : htmlspecialchars((string) $valor) ?>
+            </p>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</section>
 
-            <?php if ($turbidezFinal !== null): ?>
-                <div class="resultado">
-                    <p>
-                        Turbidez inicial:
-                        <?= number_format($turbidezInicial, 2, ',', '.') ?> NTU
-                    </p>
-                    <p>
-                        Turbidez após filtragem:
-                        <?= number_format($turbidezFinal, 2, ',', '.') ?> NTU
-                    </p>
-                    <p>
-                        Eficiência aplicada:
-                        <?= number_format($eficiencia, 2, ',', '.') ?>%
-                    </p>
-                </div>
-            <?php endif; ?>
-        </section>
+<section>
+    <h2>Simulador de Biofiltro</h2>
 
-        <section class="card relatorio">
-            <h1>Relatórios da Embasa</h1>
+    <form method="POST">
+        <label>Turbidez inicial:</label>
+        <input type="number" name="turbidezInicial"
+               step="any" min="0" required>
 
-            <?php if ($registros === []): ?>
-                <p>Nenhum relatório importado.</p>
-            <?php else: ?>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Localidade</th>
-                                <th>pH</th>
-                                <th>Turbidez</th>
-                                <th>Cloro</th>
-                                <th>Dureza</th>
-                                <th>Temperatura</th>
-                                <th>Situação</th>
-                                <th>Fonte</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($registros as $registro): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($registro['localidade']) ?></td>
-                                    <td><?= $registro['ph'] !== null ? htmlspecialchars((string) $registro['ph']) : '-' ?></td>
-                                    <td><?= $registro['turbidez'] !== null ? htmlspecialchars((string) $registro['turbidez']) : '-' ?></td>
-                                    <td><?= $registro['cloro_residual'] !== null ? htmlspecialchars((string) $registro['cloro_residual']) : '-' ?></td>
-                                    <td><?= $registro['dureza'] !== null ? htmlspecialchars((string) $registro['dureza']) : '-' ?></td>
-                                    <td><?= $registro['temperatura'] !== null ? htmlspecialchars((string) $registro['temperatura']) . ' °C' : '-' ?></td>
-                                    <td><?= htmlspecialchars($relatorio->situacao($registro)) ?></td>
-                                    <td><?= htmlspecialchars($registro['fonte']) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
-        </section>
+        <label>Eficiência de remoção (%):</label>
+        <input type="number" name="eficiencia"
+               step="any" min="0" max="100" value="80" required>
 
-    </main>
+        <button type="submit" name="simularBiofiltro">
+            Simular filtro
+        </button>
+    </form>
 
-    <script>
-        function calcularPH() {
-            const valor = Number(document.getElementById('h').value);
-            const resultado = document.getElementById('resultadoPH');
+    <?php if (isset($_POST['simularBiofiltro']) && is_float($resultado)): ?>
+        <p>Turbidez após o filtro: <?= $resultado ?> NTU</p>
+    <?php endif; ?>
+</section>
 
-            if (!Number.isFinite(valor) || valor <= 0) {
-                resultado.textContent = 'Digite uma concentração de H+ maior que zero.';
-                return;
-            }
+<section>
+    <h2>Relatórios da Embasa</h2>
 
-            const ph = -Math.log10(valor);
-            resultado.textContent = `pH = ${ph.toFixed(2)}`;
-        }
+    <?php foreach ($registros as $registro): ?>
+        <p><?= htmlspecialchars(implode(' | ', $registro)) ?></p>
+    <?php endforeach; ?>
+</section>
 
-        function avaliarAgua() {
-            const ph = Number(document.getElementById('phAgua').value);
-            const turbidez = Number(document.getElementById('turbidez').value);
-            const cloro = Number(document.getElementById('cloroResidual').value);
-            const dureza = Number(document.getElementById('dureza').value);
-            const temperatura = Number(document.getElementById('temperatura').value);
-            const resultado = document.getElementById('resultadoAgua');
-
-            if (![ph, turbidez, cloro, dureza, temperatura].every(Number.isFinite)) {
-                resultado.textContent = 'Preencha todos os campos.';
-                return;
-            }
-
-            if (turbidez < 0 || cloro < 0 || dureza < 0 || temperatura < 0 || temperatura > 100) {
-                resultado.textContent = 'Verifique os valores informados.';
-                return;
-            }
-
-            const parametros = {
-                'pH': ph >= 6 && ph <= 9.5,
-                'Turbidez': turbidez <= 5,
-                'Cloro residual': cloro >= 0.2 && cloro <= 5,
-                'Dureza': dureza <= 300
-            };
-
-            const fora = Object.entries(parametros)
-                .filter(([, dentro]) => !dentro)
-                .map(([nome]) => nome);
-
-            if (fora.length === 0) {
-                resultado.innerHTML = '<strong>Água dentro dos padrões.</strong>';
-            } else {
-                resultado.innerHTML = `<strong>Fora do padrão:</strong> ${fora.join(', ')}.`;
-            }
-        }
-    </script>
 </body>
-
 </html>
